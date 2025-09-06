@@ -357,16 +357,29 @@ await readTask;
 └─ README.md
 ```
 
+                          Do clients need high performance, 
+                          low latency, and streaming?
+                                     │
+                     ┌───────────────┴───────────────┐
+                     │                               │
+                   YES                              NO
+                     │                               │
+           Use **gRPC**                    Do clients need flexible queries, 
+        (Microservices, internal APIs,      avoid over-fetching/under-fetching,
+          real-time streaming)              and aggregate multiple sources?
+                     │                               │
+                     │                ┌──────────────┴──────────────┐
+                     │                │                             │
+                     │              YES                            NO
+                     │                │                             │
+                     │        Use **GraphQL**                Use **REST**
+                     │   (Frontend-driven, complex        (Public APIs, CRUD, 
+                     │    apps, data aggregation)         wide adoption, caching)
+                     │
+
 ---
+gRPC → Best for internal microservices, real-time streaming, and high-performance backend communication.
 
-## License & Contacts
+GraphQL → Best when the client defines what data it needs, especially in mobile/web apps where performance is tied to network round trips.
 
-This repository is provided as an example. Add your preferred license (e.g., MIT) and contributor notes here.
-
----
-
-> Want me to:
-> - generate a ready-to-commit `README.md` file (I already added it here),
-> - create `food.proto` and example C# files in the repo, or
-> - produce Dockerfile / k8s manifests next?
 

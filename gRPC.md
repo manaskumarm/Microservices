@@ -171,6 +171,23 @@ dotnet new console -n FoodOrder.Client
 dotnet sln FoodOrderGrpc.sln add FoodOrder.Server/FoodOrder.Server.csproj
 dotnet sln FoodOrderGrpc.sln add FoodOrder.Client/FoodOrder.Client.csproj
 ```
+Note: If you are using default project of .net gRPC the here is the steps:
+```
+dotnet new grpc -n FoodOrder.Server
+dotnet add package Grpc.AspNetCore.Server.Reflection
+dotnet build
+dotnet run
+
+In powershell: grpcurl -plaintext -d '{\"name\":\"Manas\"}' localhost:5071 greet.Greeter/SayHello
+May you will encounter with grpcurl or reflection issue(if you are trying to see definition)
+for grpcurl issue you can download the exe and put in folder, refer in system environment variable.
+for reflection issue, you need to add in program.cs
+builder.Services.AddGrpcReflection();
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
+```
 
 > You can also create separate class library project to contain `.proto` files and share that.
 

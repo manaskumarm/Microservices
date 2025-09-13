@@ -161,28 +161,105 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     
 var app = builder.Build();
 
-// GraphQL API & UI at /api/orders
-app.MapGraphQL("/api/orders");
+// GraphQL API & UI at /api/books
+app.MapGraphQL("/api/books");
 
-// Redirect /playground to /api/orders
-app.MapGet("/playground", context =>
+// Conditionally expose Playground UI only in development
+if (app.Environment.IsDevelopment())
 {
-    context.Response.Redirect("/api/orders");
-    return Task.CompletedTask;
-});
-
-// Map Playground UI to /playground (Nitro)
-//app.MapGraphQLPlayground("/playground");
+    // Option 1: Direct Playground mapping
+    app.MapGraphQLPlayground("/playground");
+}
 
 app.Run();
 
 // 👇 Add this so WebApplicationFactory can find Program
 public partial class Program { }
 
+//You may change little bit in program.cs based on mutation(AddMutationType), querytype(AddQueryType) file you creates.
 ```
 
 **dockerfile**
 ```
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN dotnet tool install -g Microsoft.DataApiBuilder
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+CMD ["dab", "start"]
+```
+**Client using React axios library**
+```
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const BookList = () => {
+  const [books, setBooks] = useState([]);
+  const [error, setError] = useState(null);
+
+  // URL of the GraphQL API
+  const GRAPHQL_ENDPOINT = "https://localhost:5001/api/books"; // Adjust port as needed
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const query = `
+          query {
+            books {
+              id
+              title
+              author
+            }
+          }
+        `;
+
+        const response = await axios.post(
+          GRAPHQL_ENDPOINT,
+          { query: query },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              // Authorization: `Bearer YOUR_JWT_TOKEN`, // Uncomment if using JWT
+            }
+          }
+        );
+
+        if (response.data.errors) {
+          setError(response.data.errors[0].message);
+        } else {
+          setBooks(response.data.data.books);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      <h2>Book List</h2>
+      <ul>
+        {books.map((book) => (
+          <li key={book.id}>
+            <strong>{book.title}</strong> by {book.author}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default BookList;
+
 ```
 
 ## ✅ Unit and Integration Testing

@@ -54,7 +54,11 @@ cd GraphQLDemo
 dotnet add package HotChocolate.AspNetCore
 dotnet add package HotChocolate.AspNetCore.Playground
 dotnet add package HotChocolate.Data.EntityFramework
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+dotnet add package Microsoft.EntityFrameworkCore.InMemory
 ```
+Note: Check if you need all packages.
+
 ### 🟢 Step 3 – Define the Model
 ```
 namespace GraphQLDemo.Models
@@ -118,6 +122,7 @@ dotnet run
 
 Navigate to https://localhost:5001/graphql and use the GraphQL Playground to test:
 ```
+// To get all books
 query {
   books {
     id
@@ -125,6 +130,16 @@ query {
     author
   }
 }
+
+// To get all books which title contains 1984
+query {
+  books(where: { title: { contains: "1984" } }) {
+    id
+    title
+    author
+  }
+}
+
 ```
 
 **program.cs**
@@ -167,6 +182,55 @@ public partial class Program { }
 ```
 
 **dockerfile**
+```
+```
+
+## ✅ Unit and Integration Testing
+Create a test project:
+```
+dotnet new xunit -n GraphQLDemo.Tests
+dotnet add GraphQLDemo.Tests reference GraphQLDemo
+```
+Example test for the query resolver:
+```
+using GraphQLDemo.GraphQL;
+using GraphQLDemo.Models;
+using Moq;
+using Xunit;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+
+public class QueryTests
+{
+    [Fact]
+    public void GetBooks_ReturnsBooks()
+    {
+        var options = new DbContextOptionsBuilder<GraphQLDemo.Data.AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb")
+            .Options;
+
+        using var context = new GraphQLDemo.Data.AppDbContext(options);
+        context.Books.Add(new Book { Id = 1, Title = "Test Book", Author = "Author" });
+        context.SaveChanges();
+
+        var query = new Query();
+        var result = query.GetBooks(context).ToList();
+
+        Assert.Single(result);
+        Assert.Equal("Test Book", result[0].Title);
+    }
+}
+
+```
+✅ Integration Testing Approach
+
+✔ Use WebApplicationFactory<T> to bootstrap the API in tests
+
+✔ Seed the in-memory database before each test
+
+✔ Test authentication flows with JWT tokens
+
+✔ Validate GraphQL queries using HTTP clients
 
 ## 📚 References
 

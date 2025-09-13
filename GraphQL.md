@@ -1,0 +1,183 @@
+# GraphQL Implementation in .NET Core – A Complete Guide
+
+This article explains how to implement **GraphQL** in a **.NET Core** application. It covers the basics of GraphQL, its advantages, and provides a step-by-step guide for setting up and building a GraphQL API using .NET Core.
+
+---
+
+## 📖 Table of Contents
+
+- [Introduction](#introduction)
+- [What is GraphQL and its Advantages](#what-is-graphql-and-its-advantages)
+- [Implementation with .NET Core (Step by Step)](#implementation-with-net-core-step-by-step)
+- [References](#references)
+- [Conclusion](#conclusion)
+
+---
+
+## 🟠 Introduction
+
+With the increasing demand for efficient and flexible APIs, **GraphQL** has emerged as a powerful alternative to traditional REST APIs. It allows clients to request exactly the data they need, making API interactions faster and more efficient. In this article, we will walk through how to implement GraphQL in a **.NET Core** application, enabling developers to build scalable, maintainable, and high-performance APIs.
+
+---
+
+## ✅ What is GraphQL and its Advantages
+
+**GraphQL** is a query language for APIs that enables clients to specify the structure of the response data. It was developed by Facebook and is widely adopted for its efficiency and flexibility.
+
+### Key Features:
+- **Client-driven data requests** – Clients request exactly what they need.
+- **Strong typing** – The schema defines types and relationships.
+- **Single endpoint** – No need for multiple REST endpoints.
+- **Real-time updates** – Supports subscriptions for live data changes.
+- **Introspection** – Built-in documentation and query exploration tools.
+
+### Advantages:
+✔ Reduces over-fetching and under-fetching of data  
+✔ Improves performance by minimizing unnecessary data transfer  
+✔ Easier to evolve APIs without breaking existing clients  
+✔ Provides self-documenting APIs  
+✔ Supports real-time communication with subscriptions
+
+---
+
+## ✅ Implementation with .NET Core (Step by Step)
+
+We will use the **Hot Chocolate** GraphQL library, one of the most popular libraries for GraphQL in .NET.
+
+### 🟢 Step 1 – Create a New .NET Core Project
+```
+dotnet new webapi -n GraphQLDemo
+cd GraphQLDemo
+```
+### 🟢 Step 2 – Add Required Packages
+```
+dotnet add package HotChocolate.AspNetCore
+dotnet add package HotChocolate.AspNetCore.Playground
+dotnet add package HotChocolate.Data.EntityFramework
+```
+### 🟢 Step 3 – Define the Model
+```
+namespace GraphQLDemo.Models
+{
+    public class Book
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Author { get; set; }
+    }
+}
+```
+### 🟢 Step 4 – Setup the DbContext
+
+Create Data/AppDbContext.cs:
+```
+using GraphQLDemo.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace GraphQLDemo.Data
+{
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public DbSet<Book> Books { get; set; }
+    }
+}
+```
+
+
+### 🟢 Step 5 – Define the GraphQL Schema
+
+Create GraphQL/Query.cs:
+```
+using GraphQLDemo.Data;
+using GraphQLDemo.Models;
+using HotChocolate;
+using HotChocolate.Data;
+using System.Linq;
+
+namespace GraphQLDemo.GraphQL
+{
+    public class Query
+    {
+        [UseDbContext(typeof(AppDbContext))]
+        [UseFiltering]
+        [UseSorting]
+        public IQueryable<Book> GetBooks([ScopedService] AppDbContext context)
+        {
+            return context.Books;
+        }
+    }
+}
+
+```
+
+### 🟢 Step 8 – Run and Test
+```
+dotnet run
+```
+
+Navigate to https://localhost:5001/graphql and use the GraphQL Playground to test:
+```
+query {
+  books {
+    id
+    title
+    author
+  }
+}
+```
+
+**program.cs**
+```
+using GraphQLDemo.Data;
+using GraphQLDemo.GraphQL;
+
+var builder = WebApplication.CreateBuilder(args);
+// Register services
+builder.Services.AddSingleton<OrderService>();
+// GraphQL setup
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>();
+    
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseInMemoryDatabase("BooksDb"));
+    
+var app = builder.Build();
+
+// GraphQL API & UI at /api/orders
+app.MapGraphQL("/api/orders");
+
+// Redirect /playground to /api/orders
+app.MapGet("/playground", context =>
+{
+    context.Response.Redirect("/api/orders");
+    return Task.CompletedTask;
+});
+
+// Map Playground UI to /playground (Nitro)
+//app.MapGraphQLPlayground("/playground");
+
+app.Run();
+
+// 👇 Add this so WebApplicationFactory can find Program
+public partial class Program { }
+
+```
+
+**dockerfile**
+
+## 📚 References
+
+Hot Chocolate – GraphQL for .NET
+
+GraphQL Official Documentation
+
+Entity Framework Core
+
+.NET Documentation
+
+## ✅ Conclusion
+
+GraphQL provides a modern, efficient way to interact with APIs, and integrating it with .NET Core using libraries like Hot Chocolate makes development faster and easier. With GraphQL, you can build flexible, scalable, and performant APIs that cater to client needs without unnecessary overhead. This step-by-step guide equips you to start implementing GraphQL in your next .NET Core project.

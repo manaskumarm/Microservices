@@ -102,7 +102,7 @@ type Store @model(name: "Store") {
   "data-source": {
     "database-type": "cosmosdb_nosql",
 	//"connection-string": "${COSMOS_CONNECTION_STRING}", TODO: Container Apps → Your App → Settings → Environment Variables.
-    "connection-string": "AccountEndpoint=https://hjae-servesync-dev-cosmosdb.documents.azure.com:443/;AccountKey=;",
+    "connection-string": "AccountEndpoint=https://dev-cosmosdb.documents.azure.com:443/;AccountKey=;",
     "options": {
       "database": "servesync",
       "schema": "schema.graphql"

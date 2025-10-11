@@ -188,10 +188,16 @@ To verify if it is installed properly, execute command in powershell like:
 ```
 dab --version
 ```
-You may encounter with cosmos db SSL issues because in local cosmossb runs in https port with self signed certificate. 
-To resolve the issue you may use Azure URL or export the self signed cert from cosdmosb to your container.
+Once you see the version properly, it is confirmed that it installed properly. Next, initialize the DAB component(as mentioned earlier put config, schema in same directory and go to same directory) 
+
+```
+dab init
+```
 
 <img width="954" height="464" alt="image" src="https://github.com/user-attachments/assets/46108a6a-a001-47c9-bcf7-798cdc6f7282" />
+
+You may encounter with cosmos db SSL issues because in local cosmosdb runs in https port with self signed certificate. 
+To resolve the issue you may use Azure URL or export the self signed cert from cosdmosb to your container.
 
 **References**
 https://learn.microsoft.com/en-us/azure/data-api-builder/deployment/how-to-publish-container-apps
